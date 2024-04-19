@@ -49,11 +49,15 @@ private:
 	KdFPSController	m_fpsController;
 
 	// ゲーム終了フラグ trueで終了する
-	bool		m_endFlag = false;
+	bool	m_endFlag = false;
 
 	//カメラ
 	std::shared_ptr<KdCamera> m_spCamera = nullptr;
 
+	//ポリゴンデータ
+	std::shared_ptr<KdSquarePolygon> m_spPoly = nullptr;
+
+	float _zPos = 5.0f;
 
 //=====================================================
 // シングルトンパターン
