@@ -64,16 +64,52 @@ void Application::PreUpdate()
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 void Application::Update()
 {
+	//上下左右
+	if (GetAsyncKeyState('W'))
+	{
+		_yPos += 0.1f;
+	}
+
+	if (GetAsyncKeyState('S'))
+	{
+		_yPos -= 0.1f;
+	}
+
+	if (GetAsyncKeyState('D'))
+	{
+		_xPos += 0.1f;
+	}
+
+	if (GetAsyncKeyState('A'))
+	{
+		_xPos -= 0.1f;
+	}
+
 	//遠近
-	if (GetAsyncKeyState('Z') & 0x8000)
+	if (GetAsyncKeyState('Q') & 0x8000)
 	{
 		_zPos += 0.1f;
 	}
 
-	if (GetAsyncKeyState('X') & 0x8000)
+	if (GetAsyncKeyState('E') & 0x8000)
 	{
 		_zPos -= 0.1f;
 	}
+
+	//カメラ行列の更新
+	//大きさ 
+	Math::Matrix _mScale = Math::Matrix::CreateScale(1);
+
+	//基準点(ターゲット)からどれだけ離れているか
+	Math::Matrix _mTranslation = Math::Matrix::CreateTranslation(_xPos, _yPos, _zPos);
+
+	//どれだけ傾けているか
+	Math::Matrix _mRotation = Math::Matrix::CreateRotationX(DirectX::XMConvertToRadians(45));
+
+	//カメラのワールド行列を作成、適応させる
+		//World = S(Scale:大きさ)* R(Rotation:回転) * T(Translation:位置)
+	Math::Matrix _mWorld = _mRotation * _mTranslation;
+	m_spCamera->SetCameraMatrix(_mWorld);
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
@@ -130,8 +166,13 @@ void Application::Draw()
 	// 陰影のあるオブジェクト(不透明な物体や2Dキャラ)はBeginとEndの間にまとめてDrawする
 	KdShaderManager::Instance().m_StandardShader.BeginLit();
 	{
-		Math::Matrix _mat = Math::Matrix::CreateTranslation(0, 0, _zPos);
+		Math::Matrix _mat = Math::Matrix::CreateTranslation(0, 0, 5);
+		
+		//ハムスタ
 		KdShaderManager::Instance().m_StandardShader.DrawPolygon(*m_spPoly,_mat);
+		
+		//地面
+		KdShaderManager::Instance().m_StandardShader.DrawModel(*m_spModel);
 	}
 	KdShaderManager::Instance().m_StandardShader.EndLit();
 
@@ -244,6 +285,13 @@ bool Application::Init(int w, int h)
 	//===================================================================
 	m_spPoly = std::make_shared<KdSquarePolygon>();
 	m_spPoly->SetMaterial("Asset/Data/LessonDate/Character/Hamu.png");
+	m_spPoly->SetPivot(KdSquarePolygon::PivotType::Center_Bottom);
+
+	//===================================================================
+	// 地形初期化
+	//===================================================================
+	m_spModel = std::make_shared<KdModelData>();
+	m_spModel->Load("Asset/Data/LessonDate/Terrain/Terrain.gltf");
 
 	return true;
 }
